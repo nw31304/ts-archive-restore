@@ -1,36 +1,45 @@
 /**
- * Library to archive and restore trafficstats DB objects to/from S3. The exported functions are:
- * 
+ * Library to archive and restore trafficstats DB objects to/from S3. The
+ * exported functions are:
+ *
  * archiveReport(id) - Archive all DB objects associated with report id
  * restoreReport(id) - Restore all DB objects associated with report id
  * restoreAnalysis(id) - Restore all DB objects associated with analysis id
- * 
- * All of the aove functions return Promises that resolve/reject when the corresponding action is
- * completed.
- * 
- * Notice there is no exported archiveAnalysis(n).  This is because an analysis will be implicitly
- * archived as soon as one of the reports upon which it depends is archived. Also, if any of the
- * reports needed by an analysis are archived when the analysis is restored, they will be implicitly
- * restored as part if the analysis restoral.
- * 
- * The configuration is driven by "config.js" in the ../conf directory.  Comments therein explain the
- * settings.  Key is the directory for the postgresql binaries as well as the DB configuration
- * paramters describing how to connect to the trafficstats DB.
- * 
- * tsconfig.json may need to be tweaked to cause typescript to generate JS appropriate for the node version.
- * 
+ *
+ * All of the above functions return Promises that resolve/reject when the
+ * corresponding action is completed.
+ *
+ * Notice there is no exported archiveAnalysis(n). This is because an analysis
+ * will be implicitly archived as soon as one of the reports upon which it
+ * depends is archived. Also, if any of the reports needed by an analysis are
+ * archived when the analysis is restored, they will be implicitly restored as
+ * part if the analysis restoral.
+ *
+ * The configuration is driven by "config.js" in the ../conf directory.
+ * Comments therein explain the settings. Key is the directory for the
+ * postgresql binaries as well as the DB configuration paramters describing how
+ * to connect to the trafficstats DB.
+ *
+ * tsconfig.json may need to be tweaked to cause typescript to generate JS
+ * appropriate for the node version.
+ *
  * To compile the typescript source to javascript, execute:
- * 
- *          ./node_modules/typescript/bin/tsc
- * 
+ *
+ * ./node_modules/typescript/bin/tsc
+ *
  * from the app directory.
  */
+
+
 import tmp = require("tmp");
 import aws = require('aws-sdk');
 import fs = require('fs');
 import _ = require('lodash');
-import { Config, PreparedStatement, DBConnection } from "./types";
-const config: Config = require("../conf/config.js");
+import { Sails, Config, PreparedStatement, DBConnection } from "./types";
+declare var sails: Sails
+//const config: Config = require("../conf/config.js");
+const config = sails.config.archiveRestoreConfig
+
 const exec = require('child_process').exec;
 import * as pgPromise from 'pg-promise';
 var pgp: pgPromise.IMain = pgPromise();
@@ -138,14 +147,14 @@ let report_s3_location_sql: PreparedStatement = squel.select()
   @param{number} $1 - report id
   */
 let analyses_by_report_sql: PreparedStatement = squel.select()
-    .from(`${config.db_connection.schema}.analysis_reports__report_analyses`, "j")
-    .field("j.analysis_reports")
+    .from(`${config.db_connection.schema}.analysis_report`, "j")
+    .field("j.analysis")
     .distinct()
-    .join(`${config.db_connection.schema}.analysis`, "a", "j.analysis_reports = a.id")
+    .join(`${config.db_connection.schema}.analysis`, "a", "j.analysis = a.id")
     .where(
     squel.expr()
         .and("a.archive_location is null")
-        .and("j.report_analyses=?")
+        .and("j.report=?")
     )
     .toParam()
     .text;
@@ -157,14 +166,14 @@ let analyses_by_report_sql: PreparedStatement = squel.select()
   @param{number} $1 - analysis id
   */
 let reports_by_analysis_sql: PreparedStatement = squel.select()
-    .from(`${config.db_connection.schema}.analysis_reports__report_analyses`, "j")
-    .field("report_analyses")
+    .from(`${config.db_connection.schema}.analysis_report`, "j")
+    .field("report")
     .distinct()
-    .join(`${config.db_connection.schema}.report`, "r", "j.report_analyses = r.id")
+    .join(`${config.db_connection.schema}.report`, "r", "j.report = r.id")
     .where(
     squel.expr()
         .and("r.archive_location is not null")
-        .and("j.analysis_reports=?")
+        .and("j.analysis=?")
     )
     .toParam()
     .text;
@@ -281,7 +290,7 @@ function getNeededReports(db: DBType, analysis_id: number): Promise<number[]> {
         logger.debug(() => ["Retrieving reports needed by analysis: %d", analysis_id]);
         db.any(reports_by_analysis_sql, analysis_id)
             .then((r) => {
-                let results: number[] = r.map((row) => row.report_analyses);
+                let results: number[] = r.map((row) => row.report);
                 logger.debug(() => ["%d reports referenced by analysis %d", results.length, analysis_id]);
                 resolve(results);
             })
@@ -306,7 +315,7 @@ function getDependentAnalyses(db: DBType, report_id: number): Promise<number[]> 
         logger.debug(() => ["Retrieving analyses refercing report %d", report_id]);
         db.any(analyses_by_report_sql, report_id)
             .then((r) => {
-                let results: number[] = r.map((row) => row.analysis_reports);
+                let results: number[] = r.map((row) => row.analysis);
                 logger.debug(() => ["%d non-archived analyses reference report %d", results.length, report_id]);
                 resolve(results);
             })
@@ -851,15 +860,3 @@ export function archiveReport(id: number): Promise<string> {
             })
     })
 }
-
-// archiveReport(75)
-//     .then((s3url) => logger.info(() => ["Report archived to %s: ", s3url]))
-//     .catch((err) => logger.error(() => ["Error archiving report %d: %s", 75, err]))
-
-// restoreReport(75)
-//     .then(() => logger.info(() => ["Report restored"]))
-//     .catch((err) => logger.warn(() => ["Error during restore: %s", err]))
-
-// restoreAnalysis(4)
-//     .then((s3url) => logger.info(() => ["Analysis restored"]))
-//     .catch((err) => logger.error(() => ["Error restoring analysis: %s", err]))

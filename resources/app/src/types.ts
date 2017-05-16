@@ -22,3 +22,9 @@ export interface Config {
     logger: LoggerConfig,
     db_connection: DBConnection
 }
+
+export interface Sails {
+    config: {
+        archiveRestoreConfig: Config
+    }
+}

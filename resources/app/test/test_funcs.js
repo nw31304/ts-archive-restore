@@ -1,3 +1,26 @@
+global.sails = {
+    "config": {
+        "archiveRestoreConfig": {
+            "s3_bucket": "tomtomapac.com.trafficstats",
+            "pg_prefix": "/usr/local/bin",
+            "logger": {
+                "directory": "logs",
+                "filename": "trafficstats",
+                "level": "debug"
+            },
+            "db_connection": {
+                "host": "postgresql-production.cybpkfsrzrhy.ap-southeast-2.rds.amazonaws.com",
+                "port": 5432,
+                "database": "trafficstats_internal",
+                "user": "postgres",
+                "password": "p0st0ne",
+                "number": 2,  // Number of connections in pool
+                "schema": "public"
+            }
+        }
+    }
+}
+
 const rewire = require("rewire");
 const assert = require('assert');
 const fs = require("fs")
