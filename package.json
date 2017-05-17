@@ -4,7 +4,8 @@
   "description": "Archive and restore trafficstats DB objects to AWS S3",
   "main": "ts-archive-restore",
   "scripts": {
-    "test": "node_modules/mocha/bin/mocha"
+    "test": "node_modules/mocha/bin/mocha",
+    "install": "bin/install.sh"
   },
   "author": "",
   "license": "ISC",
