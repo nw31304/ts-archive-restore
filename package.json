@@ -2,7 +2,7 @@
   "name": "ts-archive-restore",
   "version": "1.0.0",
   "description": "Archive and restore trafficstats DB objects to AWS S3",
-  "main": "ts-archive-restore",
+  "main": "dist/ts-archive-restore",
   "scripts": {
     "test": "node_modules/mocha/bin/mocha",
     "build": "./node_modules/typescript/bin/tsc -t ES2015"
