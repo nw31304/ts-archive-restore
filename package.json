@@ -5,7 +5,7 @@
   "main": "ts-archive-restore",
   "scripts": {
     "test": "node_modules/mocha/bin/mocha",
-    "install": "bin/install.sh"
+    "postinstall": "bin/postinstall.sh"
   },
   "author": "",
   "license": "ISC",
