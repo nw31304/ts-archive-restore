@@ -30,11 +30,11 @@ module.exports = {
      * trafficstats DB configuration for pg_promise
      */
     "db_connection": {
-        "host": "postgresql-production.cybpkfsrzrhy.ap-southeast-2.rds.amazonaws.com",
+        "host": "hostname",
         "port": 5432,
         "database": "trafficstats_internal",
         "user": "postgres",
-        "password": "p0st0ne",
+        "password": "xxxxxxx",
         "number": 2,  // Number of connections in pool
         "schema": "public"
     }
