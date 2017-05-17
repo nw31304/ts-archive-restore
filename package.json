@@ -16,15 +16,15 @@
     "pg-promise": "^5.6.4",
     "squel": "^5.9.0",
     "tmp": "0.0.31",
-    "winston": "^2.3.1"
-  },
-  "devDependencies": {
+    "winston": "^2.3.1",
     "@types/lodash": "^4.14.63",
     "@types/node": "^7.0.13",
     "@types/pg-promise": "^5.4.3",
+    "typescript": "^2.2.2"
+  },
+  "devDependencies": {
     "mocha": "^3.2.0",
     "rewire": "^2.5.2",
-    "tslint": "^5.1.0",
-    "typescript": "^2.2.2"
+    "tslint": "^5.1.0"
   }
 }
