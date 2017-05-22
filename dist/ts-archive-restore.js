@@ -42,6 +42,9 @@ const pgPromise = require("pg-promise");
 var pgp = pgPromise();
 let squel = require("squel").useFlavour("postgres");
 const logger = require("./logger")();
+class AlreadyArchivedOrDoesNotExistError extends Error {
+}
+exports.AlreadyArchivedOrDoesNotExistError = AlreadyArchivedOrDoesNotExistError;
 /**
   Prepared statement to reset the S3 location of an un-archived report
 
@@ -734,7 +737,7 @@ function archiveReport(id) {
             .catch((err) => {
             let errMsg = `Report ${id} either does not exist or is already archived. Error: ${err}`;
             logger.warn(() => [errMsg]);
-            throw new Error(errMsg);
+            throw new AlreadyArchivedOrDoesNotExistError(errMsg);
         })
             .then((deps) => {
             logger.debug(() => ["Dependent analyses retrieved: %s", JSON.stringify(deps)]);
