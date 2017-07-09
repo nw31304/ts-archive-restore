@@ -59,6 +59,7 @@ let reset_report_s3_location_sql: PreparedStatement = squel.update()
     .table(`${config.db_connection.schema}.report`)
     .set("archive_location", null)
     .set("archive_timestamp", null)
+    .set("restore_timestamp", "now()")
     .where("id=?")
     .toParam()
     .text;
@@ -74,6 +75,7 @@ let reset_analysis_s3_location_sql: PreparedStatement = squel.update()
     .table(`${config.db_connection.schema}.analysis`)
     .set("archive_location", null)
     .set("archive_timestamp", null)
+    .set("restore_timestamp", "now()")
     .where("id=?")
     .toParam()
     .text;
@@ -581,7 +583,7 @@ function uploadReportDump(r: number, fn: string): Promise<string> {
  *                  The Promise is resolved with a semicolon delimited string of 
  *                  commands that remove all traces of the analysis from the DB
  */
-function archiveAnalysis(id: number): Promise<string> {
+export function archiveAnalysis(id: number): Promise<string> {
     return new Promise((resolve, reject) => {
         logger.info(() => ["Initiaing archive of analysis: %d", id]);
 
@@ -615,7 +617,7 @@ function archiveAnalysis(id: number): Promise<string> {
                 // Save the DB clean SQL along with a statement that sets the
                 // state of the analysis to "archived". Then remove the
                 // temporary file.
-                cleanCommands = cmds + `update ${config.db_connection.schema}.analysis set archive_location='${s3Location}',archive_timestamp=now() where id=${id};\n`;
+                cleanCommands = cmds + `update ${config.db_connection.schema}.analysis set archive_location='${s3Location}',restore_timestamp=null,archive_timestamp=now() where id=${id};\n`;
                 logger.debug(() => ["Commands to clean DB of analysis id %d: %s", id, cleanCommands]);
                 return removeFile(tmpFile)
             })
@@ -844,7 +846,7 @@ export function archiveReport(id: number): Promise<string> {
                 // state of the analysis to "archived". Then remove the
                 // temporary file.
                 cleanCommands += cmds;
-                cleanCommands += `update ${config.db_connection.schema}.report set archive_location='${s3Location}',archive_timestamp=now() where id=${id};\n`;
+                cleanCommands += `update ${config.db_connection.schema}.report set archive_location='${s3Location}',restore_timestamp=null,archive_timestamp=now() where id=${id};\n`;
                 cleanCommands += "COMMIT;";
                 logger.debug(() => ["Commands to clean DB of report id %d: %s", id, cleanCommands]);
                 return removeFile(tmpFile)
