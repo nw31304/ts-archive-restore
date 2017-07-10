@@ -647,7 +647,7 @@ function restoreAnalysis(id) {
             .then(() => {
             logger.debug(() => ["Temporary file removal successful. Resetting archive columns in DB"]);
             tmpFile = null;
-            return db.none(reset_analysis_s3_location_sql, [null, null, id]);
+            return db.none(reset_analysis_s3_location_sql, [null, null, "now()", id]);
         })
             .then(() => {
             logger.debug(() => ["DB update successful. Restore of analysis %d complete", id]);
@@ -701,7 +701,7 @@ function restoreReport(id) {
         })
             .then(() => {
             logger.debug(() => ["Temporary file removal successful. Resetting archive columns in DB"]);
-            return db.none(reset_report_s3_location_sql, [null, null, id]);
+            return db.none(reset_report_s3_location_sql, [null, null, "now()", id]);
         })
             .then(() => {
             logger.debug(() => ["DB update successful. Restore of report %d complete", id]);

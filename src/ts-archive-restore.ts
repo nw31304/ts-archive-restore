@@ -708,7 +708,7 @@ export function restoreAnalysis(id: number): Promise<{}> {
             .then(() => {
                 logger.debug(() => ["Temporary file removal successful. Resetting archive columns in DB"]);
                 tmpFile = null;
-                return db.none(reset_analysis_s3_location_sql, [null, null, id])
+                return db.none(reset_analysis_s3_location_sql, [null, null, "now()", id])
             })
             // Restore complete
             .then(() => {
@@ -770,7 +770,7 @@ export function restoreReport(id: number): Promise<{}> {
             // indicating that the report is present in the DB
             .then(() => {
                 logger.debug(() => ["Temporary file removal successful. Resetting archive columns in DB"]);
-                return db.none(reset_report_s3_location_sql, [null, null, id])
+                return db.none(reset_report_s3_location_sql, [null, null, "now()", id])
             })
             // Restore complete
             .then(() => {
