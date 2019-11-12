@@ -3,7 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const winston = require("winston");
 const fs = require("fs");
 const path = require("path");
-const config = require("../conf/config.js");
+// const config = require("../conf/config.js");
+const config = sails.config.archiveRestoreConfig;
 const tsFormat = () => (new Date()).toUTCString();
 /**
  * This module exports a singleton wrapper around a winston logger configured

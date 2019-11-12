@@ -2,7 +2,8 @@ import winston = require("winston");
 import fs = require("fs");
 import path = require("path");
 import { Config } from "./types";
-const config: Config = require("../conf/config.js");
+// const config: Config = require("../conf/config.js");
+const config = sails.config.archiveRestoreConfig
 const tsFormat = () => (new Date()).toUTCString();
 
 /**
